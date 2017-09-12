@@ -1,0 +1,1210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>后台管理</title>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="shortcut icon" type="image/x-icon" href="favicon-56.ico" />
+	<link rel="stylesheet" type="text/css" href="/tdd/management/css.css" />
+	<link rel="stylesheet" type="text/css" href="/tdd/webdocs/uc/style/css/style.css" />
+	<link rel="stylesheet" type="text/css" href="/tdd/webdocs/uc/style/css/dialog.css" />
+	<link rel="stylesheet" type="text/css" href="/tdd/webdocs/uc/style/css/style1.css" />
+	<link rel="stylesheet" type="text/css" href="/tdd/webdocs/uc/style/css/icono.min.css" />
+	<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+	<script type="text/javascript">var proContextPath='/tdd';</script>
+	<script type="text/javascript" src="/tdd/webdocs/uc/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/tdd/webdocs/uc/js/dialog.js"></script>
+	<script type="text/javascript" src="/tdd/webdocs/uc/js/ajax.js" ></script>
+	<script type="text/javascript" src="/tdd/webdocs/uc/js/showpag.js"></script>
+	<script type="text/javascript" src="/tdd/webdocs/uc/js/form2json.js" ></script>
+	<script type="text/javascript" src="/tdd/webdocs/js/jyzx.js"></script>
+	<script type="text/javascript" src="/tdd/webdocs/js/common.js"></script>
+	<script type="text/javascript" src="/tdd/scripts/default.js"></script>
+	<script type="text/javascript" src="/tdd/scripts/jquery.form.js"></script>
+</head>
+
+<body style="background:#DCEBF0;">
+	<div class="wrap s_clear">
+		
+
+
+
+<link rel="stylesheet" href="/tdd/webdocs/index/style/css/style.css">
+<script type="text/javascript">var yuMingContextPath ='/tdd';</script>
+
+<script type="text/javascript" src="/tdd/loginJump.js"></script>
+<script type="text/javascript" src="/tdd/loginJumpFun.js"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		setTopImage();
+	});
+     
+	function menuFixed(id){
+	    var obj = document.getElementById(id);
+		//元素顶端到窗口上边界的距离  
+	    var _getHeight = obj.offsetTop;
+	     
+	    // 窗口滚动时
+		window.onscroll = function(){
+	        changePos(id,_getHeight);
+	    }
+	}
+	
+	function changePos(id,height){
+	    var obj = document.getElementById(id);
+		//窗口被浏览器卷去的长度 
+	    var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+	    if(scrollTop <= height){
+	        obj.style.position = 'relative';
+	    }else{
+	        obj.style.position = 'fixed';
+	    }
+	}
+	 
+	window.onload = function(){
+	   // menuFixed('topbar');
+	}
+	
+	function changeInfo(){
+		var url = proContextPath + "/user/user_chageInfo.action";
+		dlg=new Dialog({type:'url',value:url},{id:'',draggable:false,title:'修改信息',width:'450px',height:'360px'});
+		dlg.show();
+	}
+	
+	function submitInfo(){
+		var pswd1 = $("#password1").val();
+		var pswd2 = $("#password2").val();
+		var oldpassword = $("#oldpassword").val();
+		if(oldpassword == ""){
+			alert("原始密码不能为空");
+			return ;
+		}
+		if(pswd1==""){
+			alert("新密码不能为空");
+			return ;
+		}
+		var regP=/(?!^[0-9]+$)(?!^[A-z]+$)(?!^[^A-z0-9]+$)^.{6,20}$/;
+		if(!regP.test(pswd1)){
+			alert("密码格式不对,数字,字母和特殊字符组合6到20位!");
+			return;
+		}
+		if(pswd2==""){
+			alert("重复密码不能为空");
+			return ;
+		}
+		if(pswd1!=pswd2){
+			alert("两次密码要一致");
+			return ;
+		} 
+		
+		var mobile = $('#mobile').val();
+		var oldMobile = $('#oldMobile').val();
+		if (mobile != oldMobile) {
+			var verifCode = $('#verifCode').val();
+			if (verifCode == "") {
+				alert("请输入验证码！ ");
+				return ;
+			}
+		}
+		
+		if (mobile == "") {
+			alert("手机号不能为空！");
+			return ;
+		} 
+		var queryString = $('#modifyForm').serialize();
+		var flag = "0";
+		var url = proContextPath + "/user/user_doChange.action";
+		$("#btn").attr("disabled",true);
+		$.ajax({
+			type: "POST",
+			url: url,
+			data:queryString,
+			cache:false,
+			contentType:"application/x-www-form-urlencoded;charset=UTF-8",
+			success : function(data) {
+				var obj = eval("("+data+")");
+				
+					if(obj.outResult != "1")
+					{
+						alert(obj.outResultReason);
+					}
+					else
+					{
+						alert("修改成功");
+						dlg.close();
+					}
+				$("#btn").attr("disabled",false);
+			}
+		});
+	}
+	function versionList(){
+		window.open(proContextPath + "/login/getVersionList.action");
+	}
+	
+	// 倒计时60秒
+	var goneTime = 0;
+	function countDown() {
+		var restTime = 60*1000 - goneTime;
+		
+		if (restTime > 0) {
+			var restSeconds = Math.floor(restTime / 1000);
+			$("#getVerifyBtn").val(restSeconds + "秒后重新获取");
+		} else {
+			clearInterval(interv);
+			goneTime = 0;
+			$("#getVerifyBtn").attr("disabled",false);
+			$("#getVerifyBtn").val("获取验证码");
+		}
+		goneTime += 500;
+	}
+
+	// 获取短信验证码
+	function getVerifCode() {
+
+		var mobile = $.trim($("#mobile").val());
+		var userId = $.trim($("#userId").val());
+		if (mobile == "") {
+			alert("请输入手机号！");
+			return ;  
+		}
+		var oldMobile = $.trim($("#oldMobile").val());
+		if (mobile == oldMobile) {
+			alert("未修改手机号，无需获取验证码 ！");
+			return ;  
+		}
+		// 手机号第一位必须是1
+	   reg = /^1\d{10}$/;
+	   if(reg.test(mobile) === false) {  
+	       alert("手机号输入不合法！");  
+	       return ;  
+	   }
+		$("#getVerifyBtn").attr("disabled",true);
+	    interv = setInterval("countDown()",500);
+		var url = proContextPath + "/user/user_getVerifCode.action"; 
+	  	$.ajax({
+			type: "POST",
+			url: url ,
+			data:"bean.userId=" + userId + "&bean.mobile=" + mobile, 
+			cache:false,
+			contentType:"application/x-www-form-urlencoded;charset=UTF-8",
+			success : function(data) {
+				var obj = eval("("+data+")");
+				alert(obj.outResultReason);
+			}
+		});	
+	}
+	
+	function logout(){
+		if(confirm("您确定要退出？")){
+			window.location.href= proContextPath +"/login/logout.action";
+		}
+	}
+	
+	
+</script>
+<div id="topbar">
+<div id="top">
+	<div class="logo" style="width:160px;">
+	<a href="/tdd/index.html" class="h_manu">
+		<img id="yuMingJpg" src="" alt="后台管理" width="126" height="31" style="margin-top: 7px" />
+	</a>
+	</div>
+	<div class="logo" style="width:800px;font-weight:700;height:20px;line-height:20px;margin-top:12px;">
+		<span style="height:26px;font-size:14px;color:#FB873B;">欢迎您，嘀哒物流</span>
+	</div>
+	<div style="float:left;height:25px;line-height:25px;font-weight:700;margin-top:9px;">
+		<a style="text-decoration:none;color:red;font-size:14px;" href="javascript:;" onclick="logout()">退出</a>&nbsp;&nbsp;
+		<a style="text-decoration:none;color:red;font-size:14px;" href="javascript:;" onclick="changeInfo()">修改信息</a>&nbsp;&nbsp;
+	</div>
+</div>
+</div>
+
+
+
+
+		<div id="contain">
+			<div class="left">
+				
+
+
+
+<script type="text/javascript">
+function menu_tree(objId)
+{
+    document.cookie = "xyjLeftMenu" + "=" + escape(objId) + ";path=/";
+}
+
+function getCookie(){
+    if(document.cookie)
+    {
+        var start = document.cookie.indexOf('xyjLeftMenu=');
+        if (start == -1) 
+        { 
+        	return ""; 
+        }
+        else
+        {
+        	var end = document.cookie.indexOf(";", start);
+        	if (end == -1) 
+        	{ 
+        		end = document.cookie.length;
+        	}
+        	end -= start;
+        	var cookie = document.cookie.substr(start,end);
+        	return unescape(cookie.substr(cookie.indexOf('=') + 1, cookie.length - cookie.indexOf('=') + 1));
+        }
+    }
+}
+
+function initCookie()
+{
+    var cookie =  getCookie();
+    if(cookie != null && cookie != "")
+    {
+    	expandCookie(cookie);
+    }
+}
+
+function expandCookie(cookie)
+{
+	var obj = "#" + cookie;
+    $(obj).parent().attr("class","act");
+    $(obj).parent().parent().css("display","");
+    $(obj).parent().parent().prev().attr("class","active");
+}
+
+function add_wait_page(){
+	jQuery('body').append('<div id="add_wait_page_first" style="background:gray;filter:alpha(opacity:50);opacity:0.5;width:96%;height:96%;"></div>');
+	jQuery('#add_wait_page_first').css({'left':'0','top':'0','width':'100%','height':jQuery(document).height(),'z-index':10000000,'position':'absolute'});
+                   
+    jQuery('body').append('<div id="add_wait_page_second" style="width:220px;height:13px;"><img src="/tdd/images/1BaxfIFEuF.gif" /></div>');
+	jQuery('#add_wait_page_second').css({'left':(jQuery(window).width()-220)/2, 'top':(jQuery(window).height()-13)/2,'width':'100px','z-index':10000000,'position':'absolute'});             
+                   
+}
+
+function showHide(num){
+	var div = $("#menuDiv"+num);
+	var img = $("#img"+num);
+	if(div.is(":hidden")){
+		div.show();
+		img.attr("src","/tdd/images/jianhao--.png");
+		
+	}else{
+		div.hide();
+		img.attr("src","/tdd/images/jiahao++.png");
+	}
+	
+}
+</script>
+
+
+<style type="text/css">
+
+.usermenu1{  
+	position:relative;
+	padding-top:20px;
+	height:100%;
+	min-height:1000px; 	
+	width:100%; 
+	white-space:nowrap;
+	background:rgb(31,31,31);
+	/*  border-left: 1px ;  */
+	background:-moz-linear-gradient(top,rgb(20,20,20),rgb(40,40,40));/*Mozilla*/
+	background:-webkit-gradient(linear,0 50%,100% 50%,from(rgb(20,20,20)),to(rgb(40,40,40)));/*Old gradient for webkit*/
+	background:-webkit-linear-gradient(top,rgb(20,20,20),rgb(40,40,40));/*new gradient for Webkit*/
+	background:-o-linear-gradient(top,rgb(20,20,20),rgb(40,40,40)); /*Opera11*/
+	background: -ms-linear-gradient(top, rgb(20,20,20) 0%,rgb(40,40,40) 100%); /* IE10+ */ 
+    background:filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr='rgb(20,20,20)', endColorstr='rgb(40,40,40)');   /* IE9 */ 	
+	background:-ms-filter:progid:DXImageTransform.Microsoft.gradient(GradientType=0, startColorstr='rgb(20,20,20)', endColorstr='rgb(40,40,40)');   /* IE8+ */ 												
+    background:filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='rgb(20,20,20)', endColorstr='rgb(40,40,40)',GradientType=0 );  /* IE6-8 */
+	
+ }
+.li1{
+	position:relative;
+	text-align: left;
+	padding-left:10px; 
+	vertical-align:middle; 
+	font-size: 14px; 
+	line-height: 35px;	
+	}
+	
+.li1:hover{
+	background:rgb(74,74,74);
+}
+
+.li1:hover a{
+	color: rgb(255,220,147); 
+	text-decoration: none;
+	padding-left: 5px;
+}
+
+.li1:hover i{
+	color: rgb(255,220,147); 
+}
+
+
+.li1 a{	
+	color:rgb(154,154,154); 
+	font-family: "Arial","Microsoft YaHei","黑体","宋体",sans-serif;
+	-moz-transition: all 0.2s ease-in-out;
+	-webkit-transition: all 0.2s ease-in-out;
+	-o-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+	
+}
+/* .li1 a:hover{
+	color: rgb(255,220,147); 
+	text-decoration: none;
+	padding-left: 10px;
+}
+.li1 a:hover i{
+	color: rgb(255,220,147); 
+}
+ */
+</style>
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        //$(".usermenu ul").hide();
+        //$(".usermenu .active").next().show();
+
+        //$(".usermenu h2").click(function(){
+        //	$(".usermenu h2").removeClass('active');
+        //	if ($(this).next().is(":hidden")){
+        //		$(".usermenu ul").slideUp();
+        //		$(this).next().slideDown();
+        //		$(this).addClass('active');
+        //	}
+        //	else
+        //	{
+        //		$(".usermenu ul").slideUp();
+        //	}
+
+        //initCookie();
+        var arr = $("div[id^='menuDiv']");
+
+        var num = arr[0].id.replace("menuDiv", "");
+        // 菜单选中，判断url中path或path去掉后三位数字后的值, 在左侧菜单中a href的值相等的菜单选中显示
+        var whiteList = {
+            "ddyBaseInfo_ddyBidAgingList.action":"/tdd/001405.html",
+            "ddyBaseInfo_openBidSettings.action":"/tdd/001405.html",
+            "ddyBaseInfo_carrierGroupList.action":"/tdd/001405.html",
+            "ddyGoodsOrderAudit_toAuditGoodsOrderM.action":"/tdd/001401.html",
+            "ddyGoodsOrderAudit_toDdyGoodsOrderDetail.action":"/tdd/001401.html",
+            "ddyGoodsOrder_updateDdyGoodsOrderMPTshow.action":"/tdd/001403.html"
+        };
+        var path = location.pathname;
+        if(path.indexOf("\.action")>-1){
+            path = path.slice(path.lastIndexOf('\/')+1);
+            path = whiteList[path];
+        }
+        var $current = path?$(".left li a[href=" + path + "]"):[];
+        if ($current.length < 1) {
+            try {
+                var acurrent = path.split('.')[0];
+                acurrent = acurrent.slice(0, -3);
+                path = acurrent + ".html";
+                $current = $(".left li a[href=" + path + "]");
+            }catch(e){}
+        }
+        if ($current.length == 1) {
+            showHide($current.parent().parent().attr("id").replace("menuDiv", ""));
+        }else{
+            showHide(num) ;
+        }
+    });
+</script>
+<!--管理员菜单-->
+<div class="usermenu1">
+	<ul>
+		
+		<!-- 平台方 -->
+		<li class="li1">
+			<a href="javascript:showHide('1');" id="222">
+				<span class="menuIcon">
+					<img id="img1" alt="" src="/tdd/images/jiahao++.png">
+				</span>
+				平台级
+			</a>
+		</li>
+		<div  id = "menuDiv1" style="display: none;">
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00345.html" id="345">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				参数配置
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00819.html" id="819">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				承运方认证审核
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00821.html" id="821">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				货主认证审核
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001125.html" id="1125">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				充值审核
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00154.html" id="154">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				提现审核
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00154002.html" id="1311">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				支付司机申请审核
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001127.html" id="1127">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				客户余额
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001128.html" id="1128">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				资金流水列表
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00018.html" id="18">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				平台货源单
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00020.html" id="20">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				平台运输单
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00021.html" id="21">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				平台调度单
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00823.html" id="823">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				平台承运方
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00824.html" id="824">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				结算单明细
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00822.html" id="822">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				平台货主
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00014.html" id="14">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				会员权限配置
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00015.html" id="15">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				操作员管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001214.html" id="1214">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				全流程数据报表
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001129.html" id="1129">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				运输合同打印
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001130.html" id="1130">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				返利贴息
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001241.html" id="1241">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				开票管理(系统订单)
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001251.html" id="1251">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				开票管理(返利贴息)
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001321.html" id="1321">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				开票管理(支付到司机)
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001231.html" id="1231">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				开票管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001271.html" id="1271">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				司机信息修改
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001281.html" id="1281">
+				<span class="menuIcon">
+					<img  alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				车辆信息修改
+			</a>
+			</li>
+			
+		</div>
+		
+		
+		<!-- 承运方 -->
+		<li class="li1">
+			<a href="javascript:showHide('2');" id="">
+				<span class="menuIcon">
+					<img id="img2"  alt="" src="/tdd/images/jiahao++.png">
+				</span>
+				承运级
+			</a>
+		</li>
+		<div id = "menuDiv2" style="display: none;">
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00133.html" id="133">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					银行信息维护
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00006.html" id="6">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					收纳车辆
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00009.html" id="9">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					收纳司机
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00007.html" id="7">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					车辆信息
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00019.html" id="19">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					司机信息
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001291.html" id="1291">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					支付司机认证
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00167.html" id="167">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					操作员管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00003.html" id="3">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					抢单
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00004.html" id="4">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					运输单管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00005.html" id="5">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					调度单管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00825.html" id="825">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					结算单明细
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00316.html" id="316">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					回单审核记录
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00124.html" id="124">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					充值提现管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00134.html" id="134">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					充值明细列表
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00135.html" id="135">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					提现明细列表
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/00132.html" id="132">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					资金流水列表
+				</a>
+			</li>
+			
+		</div>
+		
+		
+		<!-- 发货方 -->
+		<li class="li1">
+			<a href="javascript:showHide('3');" id="">
+				<span class="menuIcon" >
+					<img id="img3"  alt="" src="/tdd/images/jiahao++.png">
+				</span>
+				发货级
+			</a>
+		</li>
+		<div id = "menuDiv3" style="display: none;">
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/0001123.html" id="1123">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				发票信息维护
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00136.html" id="136">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				银行信息维护
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00027.html" id="27">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				承运单位分组
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00168.html" id="168">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				操作员管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00001001.html" id="1">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				发布货源
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00001002.html" id="1261">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				发布货源（支付司机）
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00030.html" id="30">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				导入货源单
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00030002.html" id="1301">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				导入货源单（支付司机）
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00002.html" id="2">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				货源单管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00025.html" id="25">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				运输单管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00026.html" id="26">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				调度单管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00826.html" id="826">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				结算单明细
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00215.html" id="215">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				回单审核
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/001213.html" id="1213">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				上传补单回单
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00153.html" id="153">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				外部接口导入
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00137.html" id="137">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				充值提现管理
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00141.html" id="141">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				运费支付
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00139.html" id="139">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				充值明细列表
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00140.html" id="140">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				提现明细列表
+			</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+			<a href="/tdd/00138.html" id="138">
+				<span class="menuIcon">
+					<img alt="" src="/tdd/images/yuandian-O.png">
+				</span>
+				资金流水列表
+			</a>
+			</li>
+			
+		</div>
+		
+		
+		<!-- 嘀哒运平台 -->
+		<li class="li1">
+			<a href="javascript:showHide('4');" id="">
+				<span class="menuIcon">
+					<img id="img4"  alt="" src="/tdd/images/jiahao++.png">
+				</span>
+				嘀哒运-平台
+			</a>
+		</li>
+		<div id = "menuDiv4" style="display: none;">
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001401.html" id="1401">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					发布单审核
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001402.html" id="1402">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					询价单管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001403.html" id="1403">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					运输单管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001404.html" id="1404">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					结算单管理
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001405.html" id="1405">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					嘀哒运参数配置
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001406.html" id="1406">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					经纪人注册审核
+				</a>
+			</li>
+			
+		</div>
+		
+		
+		<!-- 嘀哒运货主 -->
+		<li class="li1">
+			<a href="javascript:showHide('5');" id="">
+				<span class="menuIcon">
+					<img id="img5"  alt="" src="/tdd/images/jiahao++.png">
+				</span>
+				嘀哒运-货主
+			</a>
+		</li>
+		<div id = "menuDiv5" style="display: none;">
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001501.html" id="1501">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					我要发货
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001502.html" id="1502">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					待审列表
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001503.html" id="1503">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					询价列表
+				</a>
+			</li>
+			
+			<li class="li1" style="padding-left: 30px;">
+				<a href="/tdd/001504.html" id="1504">
+					<span class="menuIcon">
+						<img alt="" src="/tdd/images/yuandian-O.png">
+					</span>
+					运输列表
+				</a>
+			</li>
+			
+		</div>
+		
+		
+				
+	</ul>
+</div>
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?72fe1aed2eb0540aebed2790d369fa17";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+			</div>
+			<div class="main" style="float:none;width:100%;margin-left:221px;">
+				<!-- <h2 class="mainhd">
+					管理首页
+				</h2>
+				<div class="clearfix"></div> -->
+<!-- 			    <table width="100%" style=""> -->
+<!-- 			    	<tr style="text-align: center;"> -->
+<!-- 			    		<td>&nbsp;</td> -->
+<!-- 			    		<td style="background: url(../images/1-2.jpg) no-repeat; height: 120px;  padding:3px 5px 15px 20px; " width="25%"> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:top; text-align:center;  height: 55px; "> -->
+<!-- 			    				货源单 -->
+<!-- 			    			</div> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:margin; text-align:center; height: 55px; padding:0px 5px 15px 20px;"> -->
+
+<!-- 			    			</div> -->
+<!-- 			    		</td> -->
+<!-- 			    		<td>&nbsp;</td> -->
+<!-- 			    		<td style="background: url(../images/1-2.jpg) no-repeat; height: 120px; padding:3px 5px 15px 20px;" width="20%"> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:top; text-align:center; height: 55px; "> -->
+<!-- 			    				运输运单 -->
+<!-- 			    			</div> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:margin; text-align:center; height: 55px; padding:0px 5px 15px 20px;"> -->
+
+<!-- 			    			</div> -->
+<!-- 			    		</td> -->
+<!-- 			    		<td>&nbsp;</td> -->
+<!-- 			    		<td style="background: url(../images/2-2.jpg) no-repeat; height: 120px; padding:3px 5px 15px 20px;" width="20%"> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:top; text-align:center; height: 55px; "> -->
+<!-- 			    				车辆 -->
+<!-- 			    			</div> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:margin; text-align:center; height: 55px; padding:0px 5px 15px 20px;"> -->
+
+<!-- 			    			</div> -->
+<!-- 			    		</td> -->
+<!-- 			    		<td>&nbsp;</td> -->
+<!-- 			    		<td style="background: url(../images/3-2.jpg) no-repeat; height: 120px; padding:3px 5px 15px 20px; " width="15%"> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:top; text-align:center; height: 55px; "> -->
+<!-- 			    				司机 -->
+<!-- 			    			</div> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:margin; text-align:center; height: 55px; padding:0px 5px 15px 20px;"> -->
+
+<!-- 			    			</div> -->
+<!-- 			    		</td> -->
+<!-- 			    		<td >&nbsp;</td> -->
+<!-- 			    		<td style="background: url(../images/4-2.jpg) no-repeat; height: 120px; padding:3px 5px 15px 20px;" width="15%"> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:top; text-align:center; height: 55px; "> -->
+<!-- 			    				承运人 -->
+<!-- 			    			</div> -->
+<!-- 			    			<div style="font-size: 20px; vertical-align:margin; text-align:center; height: 55px; padding:0px 5px 15px 20px;"> -->
+
+<!-- 			    			</div> -->
+<!-- 			    		</td> -->
+<!-- 			    	</tr> -->
+<!-- 			    </table> -->
+              <div style="height: 596px;margin-left: 0px;text-align: center;background:#DCEBF0;" >
+                 <img alt="" src="/tdd/management/login/images/main_page.jpg"  style="width:100%;" />
+              </div>
+              
+			</div>
+		</div>
+	</div>
+</body>
+</html>
